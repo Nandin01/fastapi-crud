@@ -1,19 +1,10 @@
 from datetime import datetime
 
-from mongoengine import Document, StringField, DateTimeField
+from pydantic import BaseModel
 
-
-class Todo(Document):
-    title = StringField(required=True)
-    description = StringField(default="")
-    created_at = DateTimeField(default=datetime.utcnow)
-    updated_at = DateTimeField(default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "description": self.description,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }
+class Todo(BaseModel):
+    title: str
+    description: str
+    created_at: datetime = None
+    updated_at: datetime = None
+    completed: bool = False

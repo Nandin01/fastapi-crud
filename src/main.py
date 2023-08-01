@@ -1,72 +1,43 @@
-from typing import Optional
+from datetime import datetime
 
 import uvicorn
-
-from models import Todo
 from fastapi import FastAPI
-from mongoengine import connect
-import json
+from pymongo import MongoClient
+from database import TodoService
 
 app = FastAPI()
-connect(db="todo", host="localhost", port=27017)
 
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017")
+todo_service = TodoService(client)
 
-# Get all data
+# Define the routes
 @app.get("/")
-def index():
-    return {"message": "Welcome to the todo app!"}
+async def root():
+    return {"message": "Welcome to the Todo API!"}
 
-
-# Get all todos
-@app.get("/todos")
-def get_all_todos():
-    todos = Todo.objects().all()
-    todo_list = []
-    for todo in todos:
-        todo_list.append(todo.to_dict())
-    return {"todos": todo_list}
-
-
-# Get a todo by ID
-@app.get("/todos/{id}")
-def get_todo_by_id(id: str):
-    todo = Todo.objects.get(id=id)
-    if todo is None:
-        return {"message": "Todo not found."}
-    return {"todo": todo.to_dict()}
-
-
-# Create a new todo
 @app.post("/todos")
-def create_todo(title: str, description: Optional[str] = None):
-    todo = Todo(title=title, description=description)
-    todo.save()
-    return {"todo": todo.to_dict()}
+async def create_todo(todo: dict):
+    todo["created_at"] = {"$date": datetime.utcnow()}
+    todo["updated_at"] = {"$date": datetime.utcnow()}
+    result = await todo_service.create_todo(todo)
+    return result
 
+@app.get("/todos")
+async def get_todos():
+    return await todo_service.get_todos()
 
-# Update a todo
+@app.get("/todos/{id}")
+async def get_todo(id: str):
+    return await todo_service.get_todo(id)
+
 @app.put("/todos/{id}")
-def update_todo(id: str, title: Optional[str] = None, description: Optional[str] = None):
-    todo = Todo.objects.get(id=id)
-    if todo is None:
-        return {"message": "Todo not found."}
-    if title is not None:
-        todo.title = title
-    if description is not None:
-        todo.description = description
-    todo.save()
-    return {"todo": todo.to_dict()}
+async def update_todo(id: str, todo: dict):
+    return await todo_service.update_todo(id, todo)
 
-
-# Delete a todo
 @app.delete("/todos/{id}")
-def delete_todo(id: str):
-    todo = Todo.objects.get(id=id)
-    if todo is None:
-        return {"message": "Todo not found."}
-    todo.delete()
-    return {"message": "Todo deleted."}
-
+async def delete_todo(id: str):
+    return await todo_service.delete_todo(id)
 
 if __name__ == "__main__":
-     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
