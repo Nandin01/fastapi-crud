@@ -5,7 +5,7 @@ A simple CRUD Todo app built with FastAPI and MongoDB.
 ## Description
 
 This project is a basic Todo app that allows users to create, read, update, and delete Todo items. It is built using the FastAPI framework for the backend and MongoDB as the database to store the Todo items.
-
+read the wiki about how it connected to MongoDB https://github.com/Nandin01/fastapi-crud/wiki
 ## Features
 
 - Create a new Todo item with a title and description.
