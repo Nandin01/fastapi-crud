@@ -66,5 +66,4 @@ To run the app using Docker, follow these steps:
 
 The FastAPI Todo app will be running inside a Docker container at http://localhost:8000.
 
-Feel free to customize the `README.md` file further to add any additional details or make it more suitable for your project.
 
